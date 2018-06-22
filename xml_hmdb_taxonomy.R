@@ -88,6 +88,7 @@ xmldoc <- "hmdb_metabolites.xml"
 
 hmdb_tax_data <- get_hmdb(xmldoc,mets_selct)
 
+# separation with semi colon because commas present in text strings
 write.table(hmdb_tax_data,"HMDB_out.csv",quote = F,sep=";",row.names = F)
 
 
