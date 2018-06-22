@@ -1,4 +1,7 @@
 # TODO set argument for HMDB database directory and database to use
+# WARNING: if run from rstudio, memory is not released and tends to crash R/Rstudio
+# If ran from Rstudio make sure to resart R after script is finished
+# Better run as Rscript from command line
 
 # Execute with Rscript on command line (HMDB_selection.txt contains a list of HMDB accession numbers)
 # All files (xml, HMDB_selection.txt, script) should be in the same directory
@@ -33,7 +36,7 @@ get_hmdb <- function(file , mets){
         # get values
         name                <- xpathSApply(n, "//metabolite/name", xmlValue) 
         direct_parent       <- xpathSApply(n, "//metabolite/taxonomy/direct_parent", xmlValue)
-        kingdom             <- xpathSApply(n, "//metabolite/taxonomy/super_class", xmlValue)
+        kingdom             <- xpathSApply(n, "//metabolite/taxonomy/kingdom", xmlValue)
         super_class         <- xpathSApply(n, "//metabolite/taxonomy/super_class", xmlValue)
         class               <- xpathSApply(n, "//metabolite/taxonomy/class", xmlValue)
         sub_class           <- xpathSApply(n, "//metabolite/taxonomy/sub_class", xmlValue)
