@@ -1,3 +1,5 @@
+# TODO set argument for HMDB database directory and database to use
+
 # Execute with Rscript on command line (HMDB_selection.txt contains a list of HMDB accession numbers)
 # All files (xml, HMDB_selection.txt, script) should be in the same directory
 # Make sure that Rscript.exe is in PATH
