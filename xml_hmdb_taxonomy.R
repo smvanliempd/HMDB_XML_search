@@ -1,4 +1,4 @@
-# TODO set argument for HMDB database directory and database to use
+# TODO set argument for HMDB database directory
 # WARNING: if run from rstudio, memory is not released and tends to crash R/Rstudio
 # If ran from Rstudio make sure to resart R after script is finished
 # Better run as Rscript from command line
@@ -8,7 +8,8 @@
 # Make sure that Rscript.exe is in PATH
 
 # To run:
-# Rscript xml_hmdb_taxonomy.R HMDB_selection.txt
+# Rscript xml_hmdb_taxonomy.R [HMDB accession numebers] [database]
+# Rscript xml_hmdb_taxonomy.R HMDB_selection.txt urine
 
 
 
@@ -87,14 +88,15 @@ args <- commandArgs(trailingOnly = T)
 mets_selct <- scan(args[1], what = "character")
 
 # the available databases
-# xmldoc <- "sweat_metabolites.xml"
-# xmldoc <- "urine_metabolites.xml"
-xmldoc <- "hmdb_metabolites.xml"
+if (args[2] == "sweat") xmldoc <- "sweat_metabolites.xml"
+if (args[2] == "urine") xmldoc <- "urine_metabolites.xml"
+if (args[2] == "all")   xmldoc <- "hmdb_metabolites.xml"
 
+# write results to data frame
 hmdb_tax_data <- get_hmdb(xmldoc,mets_selct)
 
 # separation with semi colon because commas present in text strings
-write.table(hmdb_tax_data,"HMDB_out.csv",quote = F,sep=";",row.names = F)
+write.table(hmdb_tax_data,"HMDB_out.csv",sep=";",quote = F,row.names = F)
 
 
 
