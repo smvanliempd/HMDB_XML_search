@@ -58,6 +58,7 @@ get_hmdb <- function(file , mets){
         kegg_map_id         <- if(length(kegg_map_id) == 0L) "" else kegg_map_id[kegg_map_id != ""]
         
         # write dataframe to list
+        # if more than one value is returned use list() , e.g. kegg_map_id
         out[[i]] <<- data.table(name                = name , 
                                 accession_number    = acc , 
                                 smpdb_id            = list(smpdb_id),
