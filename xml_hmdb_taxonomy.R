@@ -1,19 +1,18 @@
-# TODO set argument for HMDB database directory
+
 # WARNING: if run from rstudio, memory is not released and tends to crash R/Rstudio
 # If ran from Rstudio make sure to resart R after script is finished
 # Better run as Rscript from command line
 
 # Execute with Rscript on command line (HMDB_selection.txt contains a list of HMDB accession numbers)
 # All files (xml, HMDB_selection.txt, script) should be in the same directory
-# Make sure that Rscript.exe is in PATH
+# Make sure that dir of Rscript.exe is in startup path
 
-# To run:
-# Rscript xml_hmdb_taxonomy.R [HMDB accession numebers] [database]
-# Rscript xml_hmdb_taxonomy.R HMDB_selection.txt urine
-
+# To run : Rscript xml_hmdb_taxonomy.R [HMDB accession numebers] [database] [save dir]
+# example: Rscript xml_hmdb_taxonomy.R HMDB_selection.txt urine C:/foo/bar
 
 
 require(XML)
+require(data.table)
 
 # the data retrieval function
 get_hmdb <- function(file , mets){
@@ -36,6 +35,9 @@ get_hmdb <- function(file , mets){
         
         # get values
         name                <- xpathSApply(n, "//metabolite/name", xmlValue) 
+        kegg_id             <- xpathSApply(n, "//metabolite/kegg_id", xmlValue)
+        kegg_map_id         <- xpathSApply(n, "//metabolite/pathways/pathway/kegg_map_id", xmlValue)
+        smpdb_id            <- xpathSApply(n, "//metabolite/pathways/pathway/smpdb_id", xmlValue)
         direct_parent       <- xpathSApply(n, "//metabolite/taxonomy/direct_parent", xmlValue)
         kingdom             <- xpathSApply(n, "//metabolite/taxonomy/kingdom", xmlValue)
         super_class         <- xpathSApply(n, "//metabolite/taxonomy/super_class", xmlValue)
@@ -44,26 +46,31 @@ get_hmdb <- function(file , mets){
         molecular_framework <- xpathSApply(n, "//metabolite/taxonomy/molecular_framework", xmlValue)
         
         # set to NA when node is empty
-        name                <- ifelse(length(name) == 0L,NA,name)
-        direct_parent       <- ifelse(length(direct_parent) == 0L,NA,direct_parent)
-        kingdom             <- ifelse(length(kingdom) == 0L,NA,kingdom)
-        super_class         <- ifelse(length(super_class) == 0L,NA,super_class)
-        class               <- ifelse(length(class) == 0L,NA,class)
-        sub_class           <- ifelse(length(sub_class) == 0L,NA,sub_class)
-        molecular_framework <- ifelse(length(molecular_framework) == 0L,NA,molecular_framework)
+        name                <- ifelse(length(name) == 0L,                "", name)
+        kegg_id             <- ifelse(length(kegg_id) == 0L,             "", kegg_id)
+        direct_parent       <- ifelse(length(direct_parent) == 0L,       "", direct_parent)
+        kingdom             <- ifelse(length(kingdom) == 0L,             "", kingdom)
+        super_class         <- ifelse(length(super_class) == 0L,         "", super_class)
+        class               <- ifelse(length(class) == 0L,               "", class)
+        sub_class           <- ifelse(length(sub_class) == 0L,           "", sub_class)
+        molecular_framework <- ifelse(length(molecular_framework) == 0L, "", molecular_framework)
+        smpdb_id            <- if(length(smpdb_id) == 0L)    "" else smpdb_id[smpdb_id != ""]
+        kegg_map_id         <- if(length(kegg_map_id) == 0L) "" else kegg_map_id[kegg_map_id != ""]
         
         # write dataframe to list
-        out[[i]] <<- data.frame( accession_number    = acc , 
-                                 name                = name , 
-                                 direct_parent       = direct_parent,
-                                 kingdom             = kingdom,
-                                 super_class         = super_class,
-                                 class               = class,
-                                 sub_class           = sub_class,
-                                 molecular_framework = molecular_framework,
-                                 stringsAsFactors = F)
+        out[[i]] <<- data.table(name                = name , 
+                                accession_number    = acc , 
+                                smpdb_id            = list(smpdb_id),
+                                kegg_id             = kegg_id,
+                                kegg_map_id         = list(kegg_map_id),
+                                direct_parent       = direct_parent,
+                                kingdom             = kingdom,
+                                super_class         = super_class,
+                                class               = class,
+                                sub_class           = sub_class,
+                                molecular_framework = molecular_framework)
         i <<- i + 1
-        rm(name,direct_parent,kingdom,super_class,class,sub_class,molecular_framework)
+        rm(name,kegg_id,direct_parent,kingdom,super_class,class,sub_class,molecular_framework,smpdb_id,kegg_map_id)
       }
       
       # free nodes from memory and remove objects
@@ -77,7 +84,9 @@ get_hmdb <- function(file , mets){
   
   # the SAX parser
   xmlEventParse(file, handlers = list(), branches = get_data())
-  out <- do.call(rbind,lapply(out, unlist))
+  
+  # make 
+  out <- do.call(rbind, out)
   return(out)
 }
 
@@ -92,11 +101,10 @@ if (args[2] == "sweat") xmldoc <- "sweat_metabolites.xml"
 if (args[2] == "urine") xmldoc <- "urine_metabolites.xml"
 if (args[2] == "all")   xmldoc <- "hmdb_metabolites.xml"
 
-# write results to data frame
+# write results to object
 hmdb_tax_data <- get_hmdb(xmldoc,mets_selct)
 
-# separation with semi colon because commas present in text strings
-write.table(hmdb_tax_data,"HMDB_out.csv",sep=";",quote = F,row.names = F)
-
+# save rds file
+saveRDS(hmdb_tax_data,paste0(args[3],"/HMDB_out.rds"))
 
 
