@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 hmdb_metabolites.xml
+hmdb_proteins.xml
 urine_metabolites.xml
 sweat_metabolites.xml
 HMDB_selection.txt

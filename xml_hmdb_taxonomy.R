@@ -35,15 +35,17 @@ get_hmdb <- function(file , mets){
         
         # get values
         name                <- xpathSApply(n, "//metabolite/name", xmlValue) 
-        kegg_id             <- xpathSApply(n, "//metabolite/kegg_id", xmlValue)
-        kegg_map_id         <- xpathSApply(n, "//metabolite/pathways/pathway/kegg_map_id", xmlValue)
-        smpdb_id            <- xpathSApply(n, "//metabolite/pathways/pathway/smpdb_id", xmlValue)
         direct_parent       <- xpathSApply(n, "//metabolite/taxonomy/direct_parent", xmlValue)
         kingdom             <- xpathSApply(n, "//metabolite/taxonomy/kingdom", xmlValue)
         super_class         <- xpathSApply(n, "//metabolite/taxonomy/super_class", xmlValue)
         class               <- xpathSApply(n, "//metabolite/taxonomy/class", xmlValue)
         sub_class           <- xpathSApply(n, "//metabolite/taxonomy/sub_class", xmlValue)
         molecular_framework <- xpathSApply(n, "//metabolite/taxonomy/molecular_framework", xmlValue)
+        kegg_id             <- xpathSApply(n, "//metabolite/kegg_id", xmlValue)
+        kegg_map_id         <- xpathSApply(n, "//metabolite/pathways/pathway/kegg_map_id", xmlValue)
+        smpdb_id            <- xpathSApply(n, "//metabolite/pathways/pathway/smpdb_id", xmlValue)
+        protein_accession   <- xpathSApply(n, "//metabolite/protein_associations/protein/protein_accession", xmlValue)
+        
         
         # set to NA when node is empty
         name                <- ifelse(length(name) == 0L,                "", name)
@@ -54,14 +56,16 @@ get_hmdb <- function(file , mets){
         class               <- ifelse(length(class) == 0L,               "", class)
         sub_class           <- ifelse(length(sub_class) == 0L,           "", sub_class)
         molecular_framework <- ifelse(length(molecular_framework) == 0L, "", molecular_framework)
-        smpdb_id            <- if(length(smpdb_id) == 0L)    "" else smpdb_id[smpdb_id != ""]
-        kegg_map_id         <- if(length(kegg_map_id) == 0L) "" else kegg_map_id[kegg_map_id != ""]
+        smpdb_id            <- if(length(smpdb_id) == 0L)          "" else smpdb_id[smpdb_id != ""]
+        kegg_map_id         <- if(length(kegg_map_id) == 0L)       "" else kegg_map_id[kegg_map_id != ""]
+        protein_accession   <- if(length(protein_accession) == 0L) "" else protein_accession[protein_accession != ""]
         
         # write dataframe to list
         # if more than one value is returned use list() , e.g. kegg_map_id
         out[[i]] <<- data.table(name                = name , 
                                 accession_number    = acc , 
                                 smpdb_id            = list(smpdb_id),
+                                protein_accession   = list(protein_accession),
                                 kegg_id             = kegg_id,
                                 kegg_map_id         = list(kegg_map_id),
                                 direct_parent       = direct_parent,
@@ -71,7 +75,7 @@ get_hmdb <- function(file , mets){
                                 sub_class           = sub_class,
                                 molecular_framework = molecular_framework)
         i <<- i + 1
-        rm(name,kegg_id,direct_parent,kingdom,super_class,class,sub_class,molecular_framework,smpdb_id,kegg_map_id)
+        rm(name,kegg_id,direct_parent,kingdom,super_class,class,sub_class,molecular_framework,smpdb_id,kegg_map_id,protein_accession)
       }
       
       # free nodes from memory and remove objects
